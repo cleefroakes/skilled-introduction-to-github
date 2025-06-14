@@ -1,0 +1,190 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculus Tutoring AI</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            max-width: 600px;
+            text-align: left;
+        }
+
+        select, button, input {
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 16px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+            button:hover {
+                opacity: 0.95;
+            }
+
+        #output, #history, #quiz, #quizResults {
+            margin-top: 20px;
+            font-size: 16px;
+        }
+
+            #output h2, #quiz h3 {
+                color: #333;
+            }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calculus Tutoring AI</h1>
+        <p>Learn calculus interactively! Select a topic to get an explanation and take a quiz.</p>
+        <select id="topicSelect">
+            <option value="">Choose a topic</option>
+            <option value="limits">Calculus I: Limits</option>
+            <option value="derivatives">Calculus I: Derivatives</option>
+            <option value="integrals">Calculus II: Definite Integrals</option>
+            <option value="partial_derivatives">Calculus III: Partial Derivatives</option>
+        </select>
+        <div id="output"></div>
+        <div id="history"></div>
+        <div id="quiz"></div>
+        <div id="quizResult"></div>
+    </div>
+
+    <script>
+        const topics = {
+            limits: {
+                explanation: `
+              <h2>Limits</h2>
+              <p>A limit describes the value a function approaches as the input gets closer to a specific point. It’s the foundation of calculus, used to define derivatives and integrals.</p>
+              <p><b>Example</b>: Find the limit of f(x) = (x^2 - 1)/(x - 1) as x approaches 1.</p>
+              <p><b>Step-by-step</b>:</p>
+              <ol>
+                <li>Substitute x = 1: (1^2 - 1)/(1 - 1) = 0/0, which is indeterminate.</li>
+                <li>Simplify: (x^2 - 1)/(x - 1) = ((x - 1)(x + 1))/(x - 1) = x + 1 (for x ≠ 1).</li>
+                <li>Evaluate the limit of x + 1 as x approaches 1: 1 + 1 = 2.</li>
+                <li>Thus, lim(x->1) (x^2 - 1)/(x - 1) = 2.</li>
+              </ol>
+            `,
+                quiz: {
+                    question: "What is lim(x->2) (x^2 - 4)/(x - 2)?",
+                    answer: "4",
+                    input: true
+                }
+            },
+            derivatives: {
+                explanation: `
+              <h2>Derivatives</h2>
+              <p>The derivative of a function represents its rate of change or slope at any point. It’s defined as f'(x) = lim(h->0) [f(x+h) - f(x)]/h.</p>
+              <p><b>Example</b>: Find the derivative of f(x) = x^2 + 3x.</p>
+              <p><b>Step-by-step</b>:</p>
+              <ol>
+                <li>Use the power rule: For x^n, the derivative is n*x^(n-1).</li>
+                <li>For x^2: d/dx(x^2) = 2x.</li>
+                <li>For 3x: d/dx(3x) = 3.</li>
+                <li>Combine: f'(x) = 2x + 3.</li>
+              </ol>
+            `,
+                quiz: {
+                    question: "What is the derivative of f(x) = 2x^3 - 4x?",
+                    answer: "6x^2 - 4",
+                    input: true
+                }
+            },
+            integrals: {
+                explanation: `
+              <h2>Definite Integrals</h2>
+              <p>A definite integral represents the area under a curve between two points, computed as ∫[a,b] f(x)dx = F(b) - F(a), where F(x) is the antiderivative.</p>
+              <p><b>Example</b>: Evaluate ∫[0,2] (x^2 + 1) dx.</p>
+              <p><b>Step-by-step</b>:</p>
+              <ol>
+                <li>Find the antiderivative: ∫(x^2 + 1)dx = (x^3/3) + x + C.</li>
+                <li>Evaluate at the bounds: F(2) = (2^3/3) + 2 = 8/3 + 2 = 14/3.</li>
+                <li>F(0) = (0^3/3 + 0 = 0.</li>
+                <li>Result: F(2) - F(0) = 14/3 - 0 = 14/3.</li>
+              </ol>
+            `,
+                quiz: {
+                    question: "Evaluate ∫[1,2] 2x dx.",
+                    answer: "2",
+                    input: true
+                }
+            },
+            partial_derivatives: {
+                explanation: `
+              <h2>Partial Derivatives</h2>
+              <p>Partial derivatives extend differentiation to functions of multiple variables, holding all but one variable constant.</p>
+              <p><b>Example</b>: Find ∂f/∂x for f(x,y) = x^2y + 3xy^2.</p>
+              <p><b>Step-by-step</b>:</p>
+              <ol>
+                <li>Treat y as a constant.</li>
+                <li>Differentiate x^2y: d/dx(x^2y) = 2xy.</li>
+                <li>Differentiate 3xy^2: d/dx(3xy^2) = 3y^2.</li>
+                <li>Combine: ∂f/dx = 2xy + 3y^2.</li>
+              </ol>
+            `,
+                quiz: {
+                    question: "Find ∂f/∂y for f(x,y) = x^2 + 2xy.",
+                    answer: "2x",
+                    input: true
+                }
+            }
+        };
+
+        function teachTopic() {
+            const topic = document.getElementById('topicSelect').value;
+            const output = document.getElementById('output');
+            const quiz = document.getElementById('quiz');
+            const quizResult = document.getElementById('quizResult');
+
+            if (!topic) {
+                output.innerHTML = '<p>Please select a topic!</p>';
+                quiz.innerHTML = '';
+                quizResult.innerHTML = '';
+                return;
+            }
+
+            output.innerHTML = topics[topic].explanation;
+            quiz.innerHTML = `
+            <h3>Quiz</h3>
+            <p>${topics[topic].quiz.question}</p>
+            <input type="text" id="quizAnswer" placeholder="Your answer">
+            <button onclick="checkAnswer('${topic}')">Submit Answer</button>
+          `;
+            quizResult.innerHTML = '';
+        }
+
+        function checkAnswer(topic) {
+            const userAnswer = document.getElementById('quizAnswer').value.trim();
+            const correctAnswer = topics[topic].quiz.answer;
+            const quizResult = document.getElementById('quizResult');
+
+            if (userAnswer === correctAnswer) {
+                quizResult.innerHTML = '<p style="color: green;">Correct! Great job!</p>';
+            } else {
+                quizResult.innerHTML = `<p style="color: red;">Incorrect. The correct answer is ${correctAnswer}. Try again!</p>`;
+            }
+        }
+    </script>
+</body>
+</html>S
